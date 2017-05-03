@@ -13,18 +13,27 @@ XML_PARSER = Yahoo()
 FACTOR_BATCH = 10000
 BATCH_SIZE = mp.cpu_count() * FACTOR_BATCH 
 
+JSON_ERROR_STRING = '{"error":{}}'
+
 def to_json(xml_string):
     try:
         return ujson.dumps(XML_PARSER.data(fromstring(xml_string)))
     except Exception as e:        
-        return '{"error":{}}'
+        return JSON_ERROR_STRING
 
 def process_batch(json_file, ok, error, batch):
     jsons = pool.map(to_json, batch)
 
     for json in jsons:
-        if json != '{"error":{}}':
-            json = str(ujson.loads(json))
+        if json != JSON_ERROR_STRING:
+            json = ujson.loads(json)
+
+            element_key = list(json.keys())[0]
+
+            if 'year' in json[element_key]:
+                json[element_key]['year'] = int(json[element_key]['year'])
+
+            json = str(ujson.dumps(json, escape_forward_slashes=False, encode_html_chars=False, ensure_ascii=False))
             if ok > 0:
                 json_file.write(',' + json)
             else:
@@ -53,8 +62,8 @@ def when_found_open_tag(matched, tags):
     return {'rgx_close': re.compile(end_tag_to_find), 'tags': tags}    
 
 if __name__ == '__main__':
-    with open(XML_PATH, 'r') as f:
-        json_file = open(JSON_PATH, 'w+')
+    with open(XML_PATH, 'r', encoding='ISO-8859-1') as f:
+        json_file = open(JSON_PATH, 'w+', encoding='UTF-8')
         json_file.write('[')
 
         ok_and_error = {'ok': 0, 'error': 0}
