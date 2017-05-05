@@ -30,8 +30,11 @@ def process_batch(json_file, ok, error, batch):
 
             element_key = list(json.keys())[0]
 
-            if 'year' in json[element_key]:
-                json[element_key]['year'] = int(json[element_key]['year'])
+            json = json[element_key]
+            json['type'] = element_key
+
+            if 'year' in json:
+                json['year'] = int(json['year'])
 
             json = str(ujson.dumps(json, escape_forward_slashes=False, encode_html_chars=False, ensure_ascii=False))
             if ok > 0:
