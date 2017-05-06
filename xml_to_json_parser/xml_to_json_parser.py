@@ -36,6 +36,17 @@ def process_batch(json_file, ok, error, batch):
             if 'year' in json:
                 json['year'] = int(json['year'])
 
+            if 'author' in json:
+                if isinstance(json['author'], str):
+                    json['author'] = [json['author']]
+                elif not 'content' in json['author']:
+                    if not all(isinstance(x, str) for x in json['author']):
+                        for idx, author in enumerate(json['author']):
+                            if not isinstance(author, str):
+                                json['author'][idx] = author['content']                                        
+                else:
+                    json['author'] = [json['author']['content']]
+
             json = str(ujson.dumps(json, escape_forward_slashes=False, encode_html_chars=False, ensure_ascii=False))
             if ok > 0:
                 json_file.write(',' + json)
