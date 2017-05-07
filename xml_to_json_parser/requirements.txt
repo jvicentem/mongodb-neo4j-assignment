@@ -1,2 +1,2 @@
+lxml==3.5.0
 ujson==1.35
-xmljson==0.1.7
