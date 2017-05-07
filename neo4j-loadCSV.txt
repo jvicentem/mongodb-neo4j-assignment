@@ -1,0 +1,23 @@
+# Se crean 4 nodos con un identificador único
+CREATE CONSTRAINT ON (p:Pub) ASSERT p.key IS UNIQUE;
+CREATE CONSTRAINT ON (a:Author) ASSERT a.name IS UNIQUE;
+CREATE CONSTRAINT ON (p:Pubtype) ASSERT p.name IS UNIQUE;
+CREATE CONSTRAINT ON (y:Year) ASSERT y.year IS UNIQUE;
+
+USING PERIODIC COMMIT 1000
+LOAD CSV WITH HEADERS FROM 'file:///dblp.csv' AS row    # el csv debe estar guardado en la carpeta import del directorio de la base de datos
+
+# Cada publicación tiene un id (key) que la representa, titulo, titulo del libro (en caso de que el tipo de publicación sea un libro), mdate (fecha de modificacion)
+CREATE (pub:Pub {key: row.key, title: row.title, booktitle: row.booktitle, mdate: row.mdate})
+
+MERGE (year:Year {year: TOINT(row.year)})
+MERGE (pubtype:Pubtype {name: row.pubtype})
+
+CREATE (pub)-[:TYPE]->(pubtype)    # Cada publicación puede ser de un tipo (article, inproceedings o book)
+CREATE (pub)-[:WROTE_IN]->(year)   # Cada publicación está escrita en un año determinado
+
+WITH pub,split(row.author, ";") as authors   # Se hace split de las lineas de la columna autor cuando hay varios autores que escriben en una publicación
+UNWIND authors AS author
+MERGE (a:Author {name: author})
+
+CREATE (pub)-[:WROTE_BY]->(a)      # Cada publicación está escrita por un autor o autores
