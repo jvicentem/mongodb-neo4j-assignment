@@ -4,12 +4,12 @@ from operator import itemgetter
 from itertools import groupby
 import time
 
-xml = 'may/dblp.xml'
+xml = './dblp.xml'
 parser = etree.iterparse(source=xml, dtd_validation=True, load_dtd=True)
 
 INTEREST_PUBS=set(['article', 'incollection', 'inproceedings'])
-ALLOWED_FIELDS = ["pubtype", "mdate", "booktitle", 
-                  "year", "url", "author", 
+ALLOWED_FIELDS = ["pubtype", "mdate", "booktitle",
+                  "year", "url", "author",
                   "title", "key"]
 
 
@@ -25,7 +25,7 @@ def check_entry_dict(entry):
     return isvalid
 
 
-def xml_entry_as_dict(name, key, mdate, elements=[]):
+def xml_as_dict(name, key, mdate, elements=[]):
     elements_keys = set([k for k,v in elements])
 
     entry_dict={}
@@ -69,7 +69,7 @@ if __name__ == "__main__":
                     else:
                         text = "NA"
                     elements.append((e.tag,text))
-                entry_dict, isvalid = xml_entry_as_dict(elem.tag, key, mdate, elements)
+                entry_dict, isvalid = xml_as_dict(elem.tag, key, mdate, elements)
                 if isvalid:
                     csvwriter.writerow(entry_dict)
             else:
@@ -77,7 +77,5 @@ if __name__ == "__main__":
             elem.clear()
             while elem.getprevious() is not None:
                 del elem.getparent()[0]
-                       #elem.clear()
-            #while elem.getprevious() is not None:
-            #    del elem.getparent()[0]
+
     print("Finish. Total Lines:{0}. Valid Lines:{1}. Total Time: {2:0.2f} secs".format(lines, valid_lines, time.time()-t0))
