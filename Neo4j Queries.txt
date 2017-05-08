@@ -1,0 +1,20 @@
+# Sacar número de publicaciones que ha realizado un autor determinado
+MATCH (pub)-[WROTE_BY]->(a)
+WHERE a.name = "Sanjeev Saxena"
+RETURN a, pub, count(pub)
+
+# Sacar número de publicaciones hechas en 2016 -> total de 8593
+MATCH (pub)-[WROTE_IN]->(year) 
+WHERE year.year = 2016 
+RETURN year, pub, count(pub) limit 30
+
+# Listar coautores de un autor determinado
+MATCH (pub)-[:WROTE_BY]->(a)
+WHERE a.name = "Roland Meyer"
+WITH a, COUNT (pub) AS numpubs, collect(pub) AS pubs
+ORDER BY numpubs DESC 
+LIMIT 1
+UNWIND pubs AS pub
+MATCH (pub)-[:WROTE_BY]->(coauthor)
+WHERE coauthor <> a
+RETURN pub, collect(coauthor)
